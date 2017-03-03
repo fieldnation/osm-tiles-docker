@@ -118,6 +118,12 @@ cli () {
     exec bash
 }
 
+tiles () {
+    echo "Generating tiles"
+    cd /usr/local/src
+    MAPNIK_MAP_FILE=/usr/local/src/mapnik-style/osm.xml MAPNIK_TILE_DIR=/data/tiles HOME=/usr/local/src/mapnik-style $asweb mapnik-style/generate_tiles.py
+}
+
 startservices () {
     startdb
     _startservice renderd

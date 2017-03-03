@@ -67,6 +67,7 @@ RUN cd /tmp && git clone git://github.com/openstreetmap/mod_tile.git && \
 
 # Install the Mapnik stylesheet
 RUN cd /usr/local/src && svn co http://svn.openstreetmap.org/applications/rendering/mapnik mapnik-style
+RUN cd /usr/local/src && git clone https://github.com/MapQuest/MapQuest-Mapnik-Style mapquest-style
 
 # Install the coastline data
 RUN cd /usr/local/src/mapnik-style && ./get-coastlines.sh /usr/local/share
@@ -77,6 +78,17 @@ ADD datasource-settings.sed /tmp/
 RUN cd /usr/local/src/mapnik-style/inc && sed --file /tmp/datasource-settings.sed  datasource-settings.xml.inc.template > datasource-settings.xml.inc
 ADD settings.sed /tmp/
 RUN cd /usr/local/src/mapnik-style/inc && sed --file /tmp/settings.sed  settings.xml.inc.template > settings.xml.inc
+
+# Setup MapQuest theme
+RUN cd /usr/local/src && rsync -av mapquest-style/ mapnik-style/
+RUN cd /usr/local/src && cp mapnik-style/inc/datasource-settings.xml.inc mapnik-style/mapquest_inc/
+RUN cd /usr/local/src && cp mapnik-style/inc/settings.xml.inc mapnik-style/mapquest_inc/
+RUN cd /usr/local/src && cp mapnik-style/inc/fontset-settings.xml.inc mapnik-style/mapquest_inc/
+ADD mercator_tiffs.tar.bz2 /usr/local/src
+RUN cd /usr/local/src && tar -jxvf mercator_tiffs.tar.bz2
+RUN cd /usr/local/src && mv mq_world_mercator_* /usr/local/share/world_boundaries/
+RUN cd /usr/local/src && rsync -av mapnik-style/mapquest_symbols/ mapnik-style/symbols/
+RUN chmod 777 /data/tiles
 
 # Configure renderd
 ADD renderd.conf.sed /tmp/
